@@ -26,6 +26,49 @@ function pad(n) {
   return (n < 10) ? ("0" + n) : n;
 }
 
+function readMinutesFromFile(indexOfDay){
+  const file = readDayFile(indexOfDay);
+  const allRows = file.toString().split(/[\r\n]+/);
+  var minutes = [];
+  for(i = 0; i < allRows.length; ++i){
+    if(allRows[i].length === 0) {
+      break;
+    }
+    const rowRegex = /^([0-9]{2} [A-Za-z]{3} [0-9]+) ([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]+)\: (.*)$/;
+    var rowData = allRows[i].match(rowRegex);
+    var date = rowData[1];
+    var time = rowData[2];
+    var measurments = rowData[3];
+
+    const dustRegex = /^PM2\.5 (.*) mcg\/m3, PM10: (.*) mcg\/m3$/;
+    var dust = measurments.match(dustRegex);
+    var PM2_5 = dust[1];
+    var PM10 = dust[2];
+
+    var timestamp = Date.parse(date + ' ' + time);
+    var datetime = new Date(timestamp);
+    
+    var minute = datetime.getMinutes();
+    var hour = datetime.getHours();
+    var second = datetime.getSeconds();
+
+    var minuteIndex = pad(hour) +":" + pad(minute);
+
+    if(minutes[minuteIndex]) {
+      minutes[minuteIndex].seconds.push({second: second, pm2_5: parseFloat(PM2_5), pm10: parseFloat(PM10)});
+      minutes[minuteIndex].sumPM2_5+=parseFloat(PM2_5);
+      minutes[minuteIndex].sumPM10+=parseFloat(PM10);
+    } else {
+      minutes[minuteIndex] = {
+         seconds:[{second: second, pm2_5: parseFloat(PM2_5), pm10: parseFloat(PM10)}],
+         sumPM2_5:parseFloat(PM2_5),
+         sumPM10:parseFloat(PM10),
+      }
+    }  
+  }
+  return minutes;
+}
+
 const readDayFile = (day) => {
   const filename = dataFolder + '/smog_' + day + '.txt';
   fs = require('fs');
@@ -51,45 +94,7 @@ app.get("/api/:day/minutes/", (req, res) => {
     res.status(404).send('No such day in list!');
   } else {
     const indexOfDay = days[index];
-    const file = readDayFile(indexOfDay);
-    const allRows = file.toString().split(/[\r\n]+/);
-    var minutes = [];
-    for(i = 0; i < allRows.length; ++i){
-      if(allRows[i].length === 0) {
-        break;
-      }
-      const rowRegex = /^([0-9]{2} [A-Za-z]{3} [0-9]+) ([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]+)\: (.*)$/;
-      var rowData = allRows[i].match(rowRegex);
-      var date = rowData[1];
-      var time = rowData[2];
-      var measurments = rowData[3];
-
-      const dustRegex = /^PM2\.5 (.*) mcg\/m3, PM10: (.*) mcg\/m3$/;
-      var dust = measurments.match(dustRegex);
-      var PM2_5 = dust[1];
-      var PM10 = dust[2];
-
-      var timestamp = Date.parse(date + ' ' + time);
-      var datetime = new Date(timestamp);
-      
-      var minute = datetime.getMinutes();
-      var hour = datetime.getHours();
-      var second = datetime.getSeconds();
-
-      var minuteIndex = pad(hour) +":" + pad(minute);
-
-      if(minutes[minuteIndex]) {
-        minutes[minuteIndex].seconds.push({second: second, pm2_5: parseFloat(PM2_5), pm10: parseFloat(PM10)});
-        minutes[minuteIndex].sumPM2_5+=parseFloat(PM2_5);
-        minutes[minuteIndex].sumPM10+=parseFloat(PM10);
-      } else {
-        minutes[minuteIndex] = {
-           seconds:[{second: second, pm2_5: parseFloat(PM2_5), pm10: parseFloat(PM10)}],
-           sumPM2_5:parseFloat(PM2_5),
-           sumPM10:parseFloat(PM10),
-        }
-      }  
-    }
+    minutes = readMinutesFromFile(indexOfDay);
 
     var averages = [];
     for(var key in minutes){
