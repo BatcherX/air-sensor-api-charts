@@ -69,6 +69,19 @@ function readMinutesFromFile(indexOfDay){
   return minutes;
 }
 
+function countAverages(minutes, divider){
+  var averages = [];
+  for(var key in minutes){
+    averages.push({
+      minute: key,
+      pm10: minutes[key].sumPM10 / minutes[key].seconds.length,
+      pm2_5: minutes[key].sumPM2_5 / minutes[key].seconds.length,
+      count: minutes[key].seconds.length
+    });
+  }
+  return averages;
+}
+
 const readDayFile = (day) => {
   const filename = dataFolder + '/smog_' + day + '.txt';
   fs = require('fs');
@@ -97,15 +110,8 @@ app.get("/api/:day/minutes/", (req, res) => {
     const indexOfDay = days[index];
     minutes = readMinutesFromFile(indexOfDay);
 
-    var averages = [];
-    for(var key in minutes){
-      averages.push({
-        minute: key,
-        pm10: minutes[key].sumPM10 / minutes[key].seconds.length,
-        pm2_5: minutes[key].sumPM2_5 / minutes[key].seconds.length,
-        count: minutes[key].seconds.length
-      });
-    }
+    const averages = countAverages(minutes,1);
+
     res.send({
       day: indexOfDay,
       unit: {
