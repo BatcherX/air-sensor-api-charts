@@ -82,7 +82,7 @@ app.get('/api/', (req, res) => {
 app.get('/api/listDays/', (req, res) => {
   const days = getAllDays();
   res.json(days);
-  console.log("listDays: ", req.ip);
+  console.log("[ OK ]", req.ip, req.url);
 });
 
 app.get("/api/:day/minutes/", (req, res) => {
@@ -92,6 +92,7 @@ app.get("/api/:day/minutes/", (req, res) => {
 
   if(index === -1) {
     res.status(404).send('No such day in list!');
+    console.log("[FAIL]", req.ip, req.url);
   } else {
     const indexOfDay = days[index];
     minutes = readMinutesFromFile(indexOfDay);
@@ -102,9 +103,18 @@ app.get("/api/:day/minutes/", (req, res) => {
         minute: key,
         pm10: minutes[key].sumPM10 / minutes[key].seconds.length,
         pm2_5: minutes[key].sumPM2_5 / minutes[key].seconds.length,
+        count: minutes[key].seconds.length
       });
     }
-    res.send(averages);
+    res.send({
+      day: indexOfDay,
+      unit: {
+        pm10: "mcg/m3",
+        pm2_5: "mcg/m3",
+      },
+      minuteAverages: averages,
+    });
+    console.log("[ OK ]", req.ip, req.url );
   }
 })
 
