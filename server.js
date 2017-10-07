@@ -69,15 +69,54 @@ function readMinutesFromFile(indexOfDay){
   return minutes;
 }
 
+function minutesBands(divider) {
+  var bands = [];
+  for(var i = 0; i < 24*60; i+=1){
+    if(i%divider === 0) {
+      bands[i] = [];
+    }
+    bands[i-i%divider].push(i);
+  }
+  return bands;
+}
+
 function countAverages(minutes, divider){
   var averages = [];
-  for(var key in minutes){
-    averages.push({
-      minute: key,
-      pm10: minutes[key].sumPM10 / minutes[key].seconds.length,
-      pm2_5: minutes[key].sumPM2_5 / minutes[key].seconds.length,
-      count: minutes[key].seconds.length
-    });
+  if (divider === 1) {
+    for(var key in minutes){
+      averages.push({
+        minute: key,
+        pm10: minutes[key].sumPM10 / minutes[key].seconds.length,
+        pm2_5: minutes[key].sumPM2_5 / minutes[key].seconds.length,
+        count: minutes[key].seconds.length
+      });
+    }
+
+  } else {
+    var bands = minutesBands(divider);
+    for(var bandLead in bands) {
+      var bandPM10 = 0;
+      var bandPM2_5 = 0;
+      var bandCount = 0;
+      for(var bandMemberIndex in bands[bandLead]) {
+        var bandMember = bands[bandLead][bandMemberIndex];
+
+        var leadMinuteIndex = pad((bandLead-bandLead%60)/60) + ":" + pad(bandLead%60);
+        var memberMinuteIndex = pad((bandMember-bandMember%60)/60) + ":" + pad(bandMember%60);
+        console.log(leadMinuteIndex, memberMinuteIndex);
+
+        bandPM10 += minutes[memberMinuteIndex].sumPM10;
+        bandPM2_5 += minutes[memberMinuteIndex].sumPM2_5;
+        bandCount += minutes[memberMinuteIndex].seconds.length;
+
+      }
+      averages.push({
+        minuteRange: leadMinuteIndex,
+        pm10: bandPM10 / bandCount,
+        pm2_5: bandPM2_5 / bandCount,
+        count: bandCount
+      })
+    }
   }
   return averages;
 }
@@ -111,6 +150,58 @@ app.get("/api/:day/minutes/", (req, res) => {
     minutes = readMinutesFromFile(indexOfDay);
 
     const averages = countAverages(minutes,1);
+
+    res.send({
+      day: indexOfDay,
+      unit: {
+        pm10: "mcg/m3",
+        pm2_5: "mcg/m3",
+      },
+      minuteAverages: averages,
+    });
+    console.log("[ OK ]", req.ip, req.url );
+  }
+})
+
+app.get("/api/:day/quarterHours/", (req, res) => {
+  const days = getAllDays();
+  const day = req.params.day;
+  const index = days.indexOf(day);
+
+  if(index === -1) {
+    res.status(404).send('No such day in list!');
+    console.log("[FAIL]", req.ip, req.url);
+  } else {
+    const indexOfDay = days[index];
+    minutes = readMinutesFromFile(indexOfDay);
+
+    const averages = countAverages(minutes,15);
+
+    res.send({
+      day: indexOfDay,
+      unit: {
+        pm10: "mcg/m3",
+        pm2_5: "mcg/m3",
+      },
+      minuteAverages: averages,
+    });
+    console.log("[ OK ]", req.ip, req.url );
+  }
+})
+
+app.get("/api/:day/hours/", (req, res) => {
+  const days = getAllDays();
+  const day = req.params.day;
+  const index = days.indexOf(day);
+
+  if(index === -1) {
+    res.status(404).send('No such day in list!');
+    console.log("[FAIL]", req.ip, req.url);
+  } else {
+    const indexOfDay = days[index];
+    minutes = readMinutesFromFile(indexOfDay);
+
+    const averages = countAverages(minutes,60);
 
     res.send({
       day: indexOfDay,
