@@ -103,7 +103,6 @@ function countAverages(minutes, divider){
 
         var leadMinuteIndex = pad((bandLead-bandLead%60)/60) + ":" + pad(bandLead%60);
         var memberMinuteIndex = pad((bandMember-bandMember%60)/60) + ":" + pad(bandMember%60);
-        console.log(leadMinuteIndex, memberMinuteIndex);
 
         bandPM10 += minutes[memberMinuteIndex].sumPM10;
         bandPM2_5 += minutes[memberMinuteIndex].sumPM2_5;
