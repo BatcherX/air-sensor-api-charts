@@ -98,23 +98,30 @@ function countAverages(minutes, divider){
       var bandPM10 = 0;
       var bandPM2_5 = 0;
       var bandCount = 0;
+      var skippedMinutes = 0;
       for(var bandMemberIndex in bands[bandLead]) {
         var bandMember = bands[bandLead][bandMemberIndex];
 
         var leadMinuteIndex = pad((bandLead-bandLead%60)/60) + ":" + pad(bandLead%60);
         var memberMinuteIndex = pad((bandMember-bandMember%60)/60) + ":" + pad(bandMember%60);
 
-        bandPM10 += minutes[memberMinuteIndex].sumPM10;
-        bandPM2_5 += minutes[memberMinuteIndex].sumPM2_5;
-        bandCount += minutes[memberMinuteIndex].seconds.length;
-
+        if(minutes[memberMinuteIndex]) {
+          bandPM10 += minutes[memberMinuteIndex].sumPM10;
+          bandPM2_5 += minutes[memberMinuteIndex].sumPM2_5;
+          bandCount += minutes[memberMinuteIndex].seconds.length;
+        } else {
+          skippedMinutes += 1;
+        }
       }
-      averages.push({
-        minuteRange: leadMinuteIndex,
-        pm10: bandPM10 / bandCount,
-        pm2_5: bandPM2_5 / bandCount,
-        count: bandCount
-      })
+      if(bandCount){
+        averages.push({
+          minuteRange: leadMinuteIndex,
+          pm10: bandPM10 / bandCount,
+          pm2_5: bandPM2_5 / bandCount,
+          count: bandCount,
+          skippedMinutes: skippedMinutes
+        });
+      }
     }
   }
   return averages;
