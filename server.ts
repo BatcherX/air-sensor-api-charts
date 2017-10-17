@@ -1,114 +1,119 @@
 import { SmogProcessor } from './server/processors/SmogProcessor';
 // Get dependencies
-const express = require('express');
+const Hapi = require('hapi');
+const Inert = require('inert');
 const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 
-const app = express();
+const server = new Hapi.Server();
+
+server.register(Inert);
+server.connection({ port: 4343, router: {stripTrailingSlash: true} });
 
 const smogProcessor = new SmogProcessor('./server/data');
 
-app.get('/api/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'server/assets/index.html'));
-});
-
-app.get('/api/listDays/', (req, res) => {
-  const days = smogProcessor.getAllDays();
-  res.json(days);
-  console.log('[ OK ]', req.ip, req.url);
-});
-
-app.get('/api/:day/minutes/', (req, res) => {
-  const days = smogProcessor.getAllDays();
-  const day = req.params.day;
-  const index = days.indexOf(day);
-
-  if (index === -1) {
-    res.status(404).send('No such day in list!');
-    console.log('[FAIL]', req.ip, req.url);
-  } else {
-    const indexOfDay = days[index];
-    const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
-
-    const averages = smogProcessor.countAverages(minutes, 1);
-
-    res.send({
-      day: indexOfDay,
-      unit: {
-        pm10: 'mcg/m3',
-        pm2_5: 'mcg/m3',
-      },
-      minuteAverages: averages,
-    });
-    console.log('[ OK ]', req.ip, req.url );
+server.route({
+  method: 'GET',
+  path: '/api',
+  handler: function (request, reply) {
+    reply.file(path.join(__dirname, 'server/assets/index.html'));
   }
 });
 
-app.get('/api/:day/quarterHours/', (req, res) => {
-  const days = smogProcessor.getAllDays();
-  const day = req.params.day;
-  const index = days.indexOf(day);
-
-  if (index === -1) {
-    res.status(404).send('No such day in list!');
-    console.log('[FAIL]', req.ip, req.url);
-  } else {
-    const indexOfDay = days[index];
-    const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
-
-    const averages = smogProcessor.countAverages(minutes, 15);
-
-    res.send({
-      day: indexOfDay,
-      unit: {
-        pm10: 'mcg/m3',
-        pm2_5: 'mcg/m3',
-      },
-      minuteAverages: averages,
-    });
-    console.log('[ OK ]', req.ip, req.url );
+server.route({
+  method: 'GET',
+  path: '/api/listDays',
+  handler: function (request, reply) {
+    const days = smogProcessor.getAllDays();
+    reply(days);
   }
 });
 
-app.get('/api/:day/hours/', (req, res) => {
-  const days = smogProcessor.getAllDays();
-  const day = req.params.day;
-  const index = days.indexOf(day);
+server.route({
+  method: 'GET',
+  path: '/api/{day}/minutes',
+  handler: function (request, reply) {
+    const days = smogProcessor.getAllDays();
+    const day = request.params.day;
+    const index = days.indexOf(day);
 
-  if (index === -1) {
-    res.status(404).send('No such day in list!');
-    console.log('[FAIL]', req.ip, req.url);
-  } else {
-    const indexOfDay = days[index];
-    const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
+    if (index === -1) {
+      reply('No such day in list!').code(404);
+    } else {
+      const indexOfDay = days[index];
+      const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
 
-    const averages = smogProcessor.countAverages(minutes, 60);
+      const averages = smogProcessor.countAverages(minutes, 1);
 
-    res.send({
-      day: indexOfDay,
-      unit: {
-        pm10: 'mcg/m3',
-        pm2_5: 'mcg/m3',
-      },
-      minuteAverages: averages,
-    });
-    console.log('[ OK ]', req.ip, req.url );
+      reply({
+        day: indexOfDay,
+        unit: {
+          pm10: 'mcg/m3',
+          pm2_5: 'mcg/m3',
+        },
+        minuteAverages: averages,
+      });
+    }
   }
 });
 
-/**
- * Get port from environment and store in Express.
- */
-const port = process.env.PORT || '4343';
-app.set('port', port);
+server.route({
+  method: 'GET',
+  path: '/api/{day}/quarterHours',
+  handler: function (request, reply) {
+    const days = smogProcessor.getAllDays();
+    const day = request.params.day;
+    const index = days.indexOf(day);
 
-/**
- * Create HTTP server.
- */
-const server = http.createServer(app);
+    if (index === -1) {
+      reply('No such day in list!').code(404);
+    } else {
+      const indexOfDay = days[index];
+      const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
 
-/**
- * Listen on provided port, on all network interfaces.
- */
-server.listen(port, () => console.log(`API running on localhost:${port}`));
+      const averages = smogProcessor.countAverages(minutes, 15);
+
+      reply({
+        day: indexOfDay,
+        unit: {
+          pm10: 'mcg/m3',
+          pm2_5: 'mcg/m3',
+        },
+        minuteAverages: averages,
+      });
+    }
+  }
+});
+
+server.route({
+  method: 'GET',
+  path: '/api/{day}/hours',
+  handler: function (request, reply) {
+    const days = smogProcessor.getAllDays();
+    const day = request.params.day;
+    const index = days.indexOf(day);
+
+    if (index === -1) {
+      reply('No such day in list!').code(404);
+    } else {
+      const indexOfDay = days[index];
+      const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
+
+      const averages = smogProcessor.countAverages(minutes, 60);
+
+      reply({
+        day: indexOfDay,
+        unit: {
+          pm10: 'mcg/m3',
+          pm2_5: 'mcg/m3',
+        },
+        minuteAverages: averages,
+      });
+    }
+  }
+});
+
+server.start(function () {
+  console.log('Server running at:', server.info.uri);
+});
