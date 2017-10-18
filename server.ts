@@ -34,26 +34,11 @@ server.route({
   method: 'GET',
   path: '/api/{day}/minutes',
   handler: function (request, reply) {
-    const days = smogProcessor.getAllDays();
-    const day = request.params.day;
-    const index = days.indexOf(day);
-
-    if (index === -1) {
-      reply('No such day in list!').code(404);
-    } else {
-      const indexOfDay = days[index];
-      const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
-
-      const averages = smogProcessor.countAverages(minutes, 1);
-
-      reply({
-        day: indexOfDay,
-        unit: {
-          pm10: 'mcg/m3',
-          pm2_5: 'mcg/m3',
-        },
-        minuteAverages: averages,
-      });
+    try {
+      const result = smogProcessor.getDayInRangesJson(request.params.day, 1);
+      reply(result);
+    } catch (error) {
+      reply(error.message).code(404);
     }
   }
 });
@@ -62,26 +47,11 @@ server.route({
   method: 'GET',
   path: '/api/{day}/quarterHours',
   handler: function (request, reply) {
-    const days = smogProcessor.getAllDays();
-    const day = request.params.day;
-    const index = days.indexOf(day);
-
-    if (index === -1) {
-      reply('No such day in list!').code(404);
-    } else {
-      const indexOfDay = days[index];
-      const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
-
-      const averages = smogProcessor.countAverages(minutes, 15);
-
-      reply({
-        day: indexOfDay,
-        unit: {
-          pm10: 'mcg/m3',
-          pm2_5: 'mcg/m3',
-        },
-        minuteAverages: averages,
-      });
+    try {
+      const result = smogProcessor.getDayInRangesJson(request.params.day, 15);
+      reply(result);
+    } catch (error) {
+      reply(error.message).code(404);
     }
   }
 });
@@ -90,26 +60,11 @@ server.route({
   method: 'GET',
   path: '/api/{day}/hours',
   handler: function (request, reply) {
-    const days = smogProcessor.getAllDays();
-    const day = request.params.day;
-    const index = days.indexOf(day);
-
-    if (index === -1) {
-      reply('No such day in list!').code(404);
-    } else {
-      const indexOfDay = days[index];
-      const minutes = smogProcessor.readMinutesFromFile(indexOfDay);
-
-      const averages = smogProcessor.countAverages(minutes, 60);
-
-      reply({
-        day: indexOfDay,
-        unit: {
-          pm10: 'mcg/m3',
-          pm2_5: 'mcg/m3',
-        },
-        minuteAverages: averages,
-      });
+    try {
+      const result = smogProcessor.getDayInRangesJson(request.params.day, 60);
+      reply(result);
+    } catch (error) {
+      reply(error.message).code(404);
     }
   }
 });

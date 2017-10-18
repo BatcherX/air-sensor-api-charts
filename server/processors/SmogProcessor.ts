@@ -5,6 +5,28 @@ export class SmogProcessor {
       this._dataFolder = dataFolder;
     }
 
+    getDayInRangesJson(day: string, range: number) {
+      const days = this.getAllDays();
+      const index = days.indexOf(day);
+
+      if (index === -1) {
+        throw new Error('No such day in list!');
+      } else {
+        const indexOfDay = days[index];
+        const minutes = this.readMinutesFromFile(indexOfDay);
+        const averages = this.countAverages(minutes, range);
+        return {
+          day: indexOfDay,
+          unit: {
+            pm10: 'mcg/m3',
+            pm2_5: 'mcg/m3',
+          },
+          minuteAverages: averages,
+        };
+      }
+
+    }
+
     getAllDays() {
       const fs = require('fs');
       const regex = /smog_(\d+-\d+-\d+).txt/;
