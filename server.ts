@@ -13,6 +13,28 @@ server.connection({ port: 4343, router: {stripTrailingSlash: true} });
 
 const smogProcessor = new SmogProcessor('./server/data');
 
+const getDayInRangesJson = function (day, range, next) {
+  try {
+    const result = smogProcessor.getDayInRangesJson(day, range);
+    next(null, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+server.method(
+  'getDayInRangesJson',
+  getDayInRangesJson,
+  {
+    cache: {
+      expiresIn: 15 * 1000,
+      generateTimeout: 4000,
+      staleIn: 5 * 1000,
+      staleTimeout: 2000
+    }
+  }
+);
+
 server.route({
   method: 'GET',
   path: '/api',
@@ -34,12 +56,13 @@ server.route({
   method: 'GET',
   path: '/api/{day}/minutes',
   handler: function (request, reply) {
-    try {
-      const result = smogProcessor.getDayInRangesJson(request.params.day, 1);
-      reply(result);
-    } catch (error) {
-      reply(error.message).code(404);
-    }
+    server.methods.getDayInRangesJson(request.params.day, 1, function(err, res){
+      if (err) {
+        reply(err.message).code(404);
+      } else {
+        reply(res);
+      }
+    });
   }
 });
 
@@ -47,12 +70,13 @@ server.route({
   method: 'GET',
   path: '/api/{day}/quarterHours',
   handler: function (request, reply) {
-    try {
-      const result = smogProcessor.getDayInRangesJson(request.params.day, 15);
-      reply(result);
-    } catch (error) {
-      reply(error.message).code(404);
-    }
+    server.methods.getDayInRangesJson(request.params.day, 15, function(err, res){
+      if (err) {
+        reply(err.message).code(404);
+      } else {
+        reply(res);
+      }
+    });
   }
 });
 
@@ -60,12 +84,13 @@ server.route({
   method: 'GET',
   path: '/api/{day}/hours',
   handler: function (request, reply) {
-    try {
-      const result = smogProcessor.getDayInRangesJson(request.params.day, 60);
-      reply(result);
-    } catch (error) {
-      reply(error.message).code(404);
-    }
+    server.methods.getDayInRangesJson(request.params.day, 60, function(err, res){
+      if (err) {
+        reply(err.message).code(404);
+      } else {
+        reply(res);
+      }
+    });
   }
 });
 
