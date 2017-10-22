@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
@@ -21,9 +21,12 @@
     "@angular/platform-browser": "^4.2.4",
     "@angular/platform-browser-dynamic": "^4.2.4",
     "@angular/router": "^4.2.4",
+    "bootstrap": "^3.3.7",
+    "chart.js": "^2.7.0",
     "core-js": "^2.4.1",
     "hapi": "^16.6.2",
     "inert": "^4.2.1",
+    "ng2-charts": "^1.6.0",
     "rxjs": "^5.4.2",
     "zone.js": "^0.8.14"
   },
@@ -46,6 +49,6 @@
     "protractor": "~5.1.2",
     "ts-node": "^3.2.2",
     "tslint": "~5.3.2",
-    "typescript": "^2.5.3"
+    "typescript": "^2.3.4"
   }
 }

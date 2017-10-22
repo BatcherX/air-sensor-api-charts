@@ -3,6 +3,7 @@ import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import { OnInit } from '@angular/core';
 import 'rxjs/add/operator/map';
+import Chart from 'chart.js';
 
 @Component({
   selector: 'app-root',
@@ -12,8 +13,8 @@ import 'rxjs/add/operator/map';
 export class AppComponent implements OnInit {
   title = 'app';
   testResponse: any;
-  private listDaysUrl = 'http://localhost:4343/api/listDays';
-  private testUrl = 'http://localhost:4343/api/2017-10-09/minutes';
+  private listDaysUrl = '/api/listDays';
+  private testUrl = '/api/2017-10-10/minutes';
   smogStatPm100 = [];
   smogStatPm25 = [];
   smogStat;
@@ -24,7 +25,7 @@ export class AppComponent implements OnInit {
     {data: [], label: 'PM 10'},
     {data: [], label: 'PM 2,5'}
   ];
-  public lineChartLabels: Array<any> = [
+  public lineChartLabels: Array<string> = [
     // '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
     // '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
     // '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
@@ -101,7 +102,7 @@ export class AppComponent implements OnInit {
               this.smogStatPm25.push(element['pm2_5']);
             });
 
-            console.log('I CAN SEE DATA THERE: ', this.smogStat['minuteAverages']);
+            // console.log('I CAN SEE DATA THERE: ', this.smogStat['minuteAverages']);
             return this.smogStat;
     });
   }
