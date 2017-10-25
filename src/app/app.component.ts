@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
-import { OnInit } from '@angular/core';
+import { OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import 'rxjs/add/operator/map';
 import Chart from 'chart.js';
+
 
 @Component({
   selector: 'app-root',
@@ -14,11 +15,13 @@ export class AppComponent implements OnInit {
   title = 'app';
   testResponse: any;
   private listDaysUrl = '/api/listDays';
-  private testUrl = '/api/2017-10-10/minutes';
+  private testUrl = '/api/2017-10-09/minutes';
   smogStatPm100 = [];
   smogStatPm25 = [];
   smogStat;
   daysList = [];
+  selectedValue = null;
+  @Input() selectedDay;
 
   // lineChart
   public isLineChartLoaded = false;
@@ -107,5 +110,21 @@ export class AppComponent implements OnInit {
     });
   }
 
+  onSelect(day: string): void {
+    this.isLineChartLoaded = false;
+    this.selectedDay = day;
+    this.testUrl = '/api/' + day + '/minutes';
+    this.lineChartData = [
+      {data: [], label: 'PM 10'},
+      {data: [], label: 'PM 2,5'}
+    ];
+    this.getDataObservable().subscribe(
+      data => {
+        this.testResponse = data;
+      }
+    );
+
+    console.log(this.testUrl);
+  }
 
 }
