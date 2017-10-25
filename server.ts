@@ -11,6 +11,46 @@ const server = new Hapi.Server();
 server.register(Inert);
 server.connection({ port: 4343, router: {stripTrailingSlash: true} });
 
+const options = {
+  ops: {
+    interval: 10000
+  },
+  reporters: {
+    myConsoleReporter: [{
+      module: 'good-squeeze',
+      name: 'Squeeze',
+      args: [{ log: '*', response: '*' }]
+    }, {
+        module: 'good-console'
+    }, 'stdout'],
+    myFileReporter: [{
+        module: 'good-squeeze',
+        name: 'Squeeze',
+        args: [{ ops: '*' }]
+    }, {
+        module: 'good-squeeze',
+        name: 'SafeJson'
+    }, {
+        module: 'good-file',
+        args: ['./server/logs/server.log']
+    }]
+  }
+};
+
+server.register({
+  register: require('good'),
+  options,
+}, (err) => {
+
+  if (err) {
+      return console.error(err);
+  }
+  server.start(() => {
+      console.log(`Server started at ${ server.info.uri }`);
+  });
+
+});
+
 const smogProcessor = new SmogProcessor('./server/data');
 
 const getDayInRangesJson = function (day, range, next) {
