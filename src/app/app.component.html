@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-md-6">
     <h2>Smog stat for 2017-10-10</h2>
-    <div style="display: block;">
+    <div *ngIf="isLineChartLoaded" style="display: block;">
     <canvas baseChart width="400" height="400"
                 [datasets]="lineChartData"
                 [labels]="lineChartLabels"

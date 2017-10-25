@@ -21,6 +21,8 @@ export class AppComponent implements OnInit {
   daysList = [];
 
   // lineChart
+  public isLineChartLoaded = false;
+
   public lineChartData: Array<any> = [
     {data: [], label: 'PM 10'},
     {data: [], label: 'PM 2,5'}
@@ -71,7 +73,6 @@ export class AppComponent implements OnInit {
     this.getDataObservable().subscribe(
         data => {
           this.testResponse = data;
-          // console.log('I CANT SEE DATA HERE: ', this.testResponse);
         }
     );
   }
@@ -80,7 +81,6 @@ export class AppComponent implements OnInit {
     return this.myHttp.get(this.listDaysUrl)
     .map(data => {
       this.daysList = data.json();
-      console.log('Hello', this.daysList);
       return this.daysList;
     });
   }
@@ -102,7 +102,7 @@ export class AppComponent implements OnInit {
               this.smogStatPm25.push(element['pm2_5']);
             });
 
-            // console.log('I CAN SEE DATA THERE: ', this.smogStat['minuteAverages']);
+            this.isLineChartLoaded = true;
             return this.smogStat;
     });
   }
