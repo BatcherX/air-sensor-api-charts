@@ -11,7 +11,7 @@ export class TodayMinutesComponent implements OnInit {
   title = 'app';
   testResponse: any;
   private listDaysUrl = '/api/listDays';
-  private testUrl = '/api/2017-10-09/minutes';
+  private testUrl = '/api/%s/minutes';
   smogStatPm100 = [];
   smogStatPm25 = [];
   smogStat;
@@ -67,12 +67,21 @@ export class TodayMinutesComponent implements OnInit {
   constructor(private myHttp: Http) { }
 
   ngOnInit() {
-    this.getDaysList().subscribe();
+    this.getDaysList().subscribe(
+      x => {
+        if (x[x.length - 1]) {
+          const lastDate: string = x[x.length - 1];
+          this.selectedDay = lastDate;
 
-    this.getDataObservable().subscribe(
-        data => {
-          this.testResponse = data;
+          this.getDataObservable(lastDate).subscribe(
+            data => {
+              this.testResponse = data;
+            }
+        );
         }
+      },
+      e => console.log('Error while downloading days list: %s', e),
+      () => console.log('onCompleted')
     );
   }
 
@@ -84,8 +93,9 @@ export class TodayMinutesComponent implements OnInit {
     });
   }
 
-  getDataObservable() {
-    return this.myHttp.get(this.testUrl)
+  getDataObservable(day: string) {
+    const url: string = this.testUrl.replace(/%s/g, day);
+    return this.myHttp.get(url)
         .map(data => {
             data.json();
             this.smogStat = data.json();
@@ -109,12 +119,12 @@ export class TodayMinutesComponent implements OnInit {
   onSelect(day: string): void {
     this.isLineChartLoaded = false;
     this.selectedDay = day;
-    this.testUrl = '/api/' + day + '/minutes';
+    const testUrl = '/api/' + day + '/minutes';
     this.lineChartData = [
       {data: [], label: 'PM 10'},
       {data: [], label: 'PM 2,5'}
     ];
-    this.getDataObservable().subscribe(
+    this.getDataObservable(testUrl).subscribe(
       data => {
         this.testResponse = data;
       }
