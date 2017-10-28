@@ -16,8 +16,10 @@
   <div class="col-md-2">
     <h4>Days</h4>
     <ul>
-      <li  class="dayInList" *ngFor="let day of daysList.slice().reverse()"  (click)="onSelect(day)">
-        {{ day }}
+      <li  class="dayInList" *ngFor="let day of daysList.slice().reverse()">
+        <a routerLink="/day-in-minutes/{{day}}">
+          {{ day }}
+        </a>
       </li >
     </ul>
   </div>  

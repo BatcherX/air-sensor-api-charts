@@ -2,4 +2,5 @@ import { TodayMinutesComponent } from './today/today-minutes/today-minutes.compo
 import { Routes } from '@angular/router';
 export const appRoutes: Routes = [
     { path: '', component: TodayMinutesComponent },
+    { path: 'day-in-minutes/:day', component: TodayMinutesComponent },
 ];

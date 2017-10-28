@@ -1,3 +1,4 @@
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, Input } from '@angular/core';
 import { Http, Response } from '@angular/http';
 
@@ -7,7 +8,7 @@ import { Http, Response } from '@angular/http';
   styleUrls: ['./today-minutes.component.css']
 })
 export class TodayMinutesComponent implements OnInit {
-
+  private sub: any;
   title = 'app';
   testResponse: any;
   private listDaysUrl = '/api/listDays';
@@ -64,25 +65,37 @@ export class TodayMinutesComponent implements OnInit {
   public lineChartLegend = true;
   public lineChartType = 'line';
 
-  constructor(private myHttp: Http) { }
+  constructor(private myHttp: Http, private route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.getDaysList().subscribe(
-      x => {
-        if (x[x.length - 1]) {
-          const lastDate: string = x[x.length - 1];
-          this.selectedDay = lastDate;
-
-          this.getDataObservable(lastDate).subscribe(
-            data => {
-              this.testResponse = data;
+    this.sub = this.route.params.subscribe(params => {
+      this.isLineChartLoaded = false;
+      if (params['day'] === undefined) {
+        this.getDaysList().subscribe(
+          x => {
+            if (x[x.length - 1]) {
+              const lastDate: string = x[x.length - 1];
+              this.selectedDay = lastDate;
+              this.getDataObservable(lastDate).subscribe(
+                data => {
+                  this.testResponse = data;
+                }
+              );
             }
+          },
+          e => console.log('Error while downloading days list: %s', e),
+          () => console.log('onCompleted')
         );
-        }
-      },
-      e => console.log('Error while downloading days list: %s', e),
-      () => console.log('onCompleted')
-    );
+      } else {
+        this.getDaysList().subscribe();
+        this.selectedDay = params['day'];
+        this.getDataObservable(params['day']).subscribe(
+          data => {
+            this.testResponse = data;
+          }
+        );
+      }
+    });
   }
 
   getDaysList () {
@@ -116,20 +129,7 @@ export class TodayMinutesComponent implements OnInit {
     });
   }
 
-  onSelect(day: string): void {
-    this.isLineChartLoaded = false;
-    this.selectedDay = day;
-    const testUrl = '/api/' + day + '/minutes';
-    this.lineChartData = [
-      {data: [], label: 'PM 10'},
-      {data: [], label: 'PM 2,5'}
-    ];
-    this.getDataObservable(testUrl).subscribe(
-      data => {
-        this.testResponse = data;
-      }
-    );
-
-    console.log(this.testUrl);
+  ngOnDestroy() {
+    this.sub.unsubscribe();
   }
 }
