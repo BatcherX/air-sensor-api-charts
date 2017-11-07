@@ -1,0 +1,26 @@
+<div class="row">
+  <div class="col-md-6">
+    <h2>Smog stat for {{selectedDay}}</h2>
+    <div *ngIf="isLineChartLoaded" style="display: block;">
+    <canvas baseChart width="400" height="400"
+                [datasets]="lineChartData"
+                [labels]="lineChartLabels"
+                [options]="lineChartOptions"
+                [colors]="lineChartColors"
+                [legend]="lineChartLegend"
+                [chartType]="lineChartType"
+                (chartHover)="chartHovered($event)"
+                (chartClick)="chartClicked($event)"></canvas>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <h4>Days</h4>
+    <ul>
+      <li  class="dayInList" *ngFor="let day of daysList.slice().reverse()">
+        <a routerLink="/day-in-minutes/{{day}}">
+          {{ day }}
+        </a>
+      </li >
+    </ul>
+  </div>  
+</div>
