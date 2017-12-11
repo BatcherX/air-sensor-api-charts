@@ -12,7 +12,7 @@ export class TodayMinutesComponent implements OnInit {
   title = 'app';
   testResponse: any;
   private listDaysUrl = '/api/listDays';
-  private testUrl = '/api/%s/minutes';
+  private testUrl = '/api/%s/quarterHours';
   smogStatPm100 = [];
   smogStatPm25 = [];
   smogStat;
@@ -126,11 +126,11 @@ export class TodayMinutesComponent implements OnInit {
             this.smogStat['minuteAverages'].forEach((element, key) => {
               this.lineChartData[0].data.push(element['pm10']);
               this.lineChartData[1].data.push(element['pm2_5']);
-              if (key % 60 === 0) {
-                this.lineChartLabels.push(element['minute']);
-              } else {
-                this.lineChartLabels.push('');
-              }
+              // if (key % 60 === 0) {
+                this.lineChartLabels.push(element['minuteRange']);
+              // } else {
+              //   this.lineChartLabels.push('');
+              // }
               this.smogStatPm100.push(element['pm10']);
               this.smogStatPm25.push(element['pm2_5']);
             });
